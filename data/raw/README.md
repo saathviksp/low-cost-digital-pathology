@@ -1,0 +1,1 @@
+Place raw blood smear microscope images here.

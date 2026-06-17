@@ -24,16 +24,22 @@ for filename in os.listdir(INPUT_FOLDER):
             print(f"Could not read {filename}")
             continue
 
-        # Resize image to standard size
+        # -------------------------------
+        # Step 1: Resize image
+        # -------------------------------
         image = cv2.resize(image, (512, 512))
+
+        # -------------------------------
+        # Step 2: Contrast Enhancement
+        # -------------------------------
 
         # Convert image to LAB color space
         lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
 
-        # Split color channels
+        # Split channels
         l, a, b = cv2.split(lab)
 
-        # Apply CLAHE for contrast enhancement
+        # Apply CLAHE to brightness channel
         clahe = cv2.createCLAHE(
             clipLimit=2.0,
             tileGridSize=(8, 8)
@@ -41,30 +47,33 @@ for filename in os.listdir(INPUT_FOLDER):
 
         cl = clahe.apply(l)
 
-        # Merge channels after enhancement
+        # Merge channels back
         enhanced_lab = cv2.merge((cl, a, b))
 
-        # Convert back to normal color format
-        enhanced_image = cv2.cvtColor(
+        # Convert back to BGR
+        image = cv2.cvtColor(
             enhanced_lab,
             cv2.COLOR_LAB2BGR
         )
 
-        # Apply light Gaussian blur for denoising
-        final_image = cv2.bilateralFilter(
-            enhanced_image,
-            9,
-            75,
-            75
+        # -------------------------------
+        # Step 3: Light Noise Reduction
+        # -------------------------------
+        image = cv2.GaussianBlur(
+            image,
+            (3, 3),
+            0
         )
 
-        # Save processed image
-        save_path = os.path.join(
+        # -------------------------------
+        # Step 4: Save processed image
+        # -------------------------------
+        output_path = os.path.join(
             OUTPUT_FOLDER,
             filename
         )
 
-        cv2.imwrite(save_path, final_image)
+        cv2.imwrite(output_path, image)
 
         print(f"Processed: {filename}")
 
